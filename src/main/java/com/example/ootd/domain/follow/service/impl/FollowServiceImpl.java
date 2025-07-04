@@ -78,7 +78,7 @@ public class FollowServiceImpl implements FollowService {
    */
   @Override
   public FollowSummaryDto getSummaryFollow(UUID userId) {
-    log.info("팔로우 요약 조회 : userId: {}", userId);
+    log.debug("팔로우 요약 조회 : userId: {}", userId);
 
     // 유저 조회
     User user = userRepository.findById(userId)
@@ -107,7 +107,7 @@ public class FollowServiceImpl implements FollowService {
    */
   @Override
   public FollowListResponse getFollowerList(FollowListCondition condition, UUID followeeId) {
-    log.info("팔로워 목록 조회 : followeeId: {}", followeeId);
+    log.debug("팔로워 목록 조회 : followeeId: {}", followeeId);
 
     // 값 추출
     String cursor = condition.cursor();
@@ -135,7 +135,7 @@ public class FollowServiceImpl implements FollowService {
     // 전체 카운트 조회
     int totalCount = (int) followRepository.countByFolloweeId(followeeId);
 
-    log.info("팔로워 목록 조회 완료 : followeeId: {}, cursor: {}, hasNext: {}", followeeId, nextCursor, hasNext);
+    log.debug("팔로워 목록 조회 완료 : followeeId: {}, cursor: {}, hasNext: {}", followeeId, nextCursor, hasNext);
 
     return FollowListResponse.builder()
         .data(responseList.stream().map(followMapper::toDto).toList())
@@ -156,7 +156,7 @@ public class FollowServiceImpl implements FollowService {
    */
   @Override
   public FollowListResponse getFollowingList(FollowListCondition condition, UUID followerId) {
-    log.info("팔로잉 목록 조회 : followerId: {}", followerId);
+    log.debug("팔로잉 목록 조회 : followerId: {}", followerId);
 
     // 값 추출
     String cursor = condition.cursor();
@@ -184,7 +184,7 @@ public class FollowServiceImpl implements FollowService {
     // 전체 카운트 조회
     int totalCount = (int) followRepository.countByFollowerId(followerId);
 
-    log.info("팔로잉 목록 조회 완료 : followerId: {}, cursor: {}, hasNext: {}", followerId, nextCursor, hasNext);
+    log.debug("팔로잉 목록 조회 완료 : followerId: {}, cursor: {}, hasNext: {}", followerId, nextCursor, hasNext);
 
     return FollowListResponse.builder()
         .data(responseList.stream().map(followMapper::toDto).toList())
@@ -212,6 +212,5 @@ public class FollowServiceImpl implements FollowService {
 
     // 팔로우 취소
     followRepository.delete(follow);
-    log.info("팔로우 취소 완료 : followId: {}", followId);
   }
 }

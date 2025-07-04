@@ -33,14 +33,12 @@ public class FollowController {
 
   @PostMapping
   public ResponseEntity<FollowDto> createFollow(@Valid @RequestBody FollowCreateRequest request) {
-      log.info("팔로우 생성 요청 : {}", request);
       FollowDto follow = followService.createFollow(request);
       return ResponseEntity.status(HttpStatus.CREATED).body(follow);
   }
 
   @GetMapping("/summary")
   public ResponseEntity<FollowSummaryDto> getSummary(@RequestParam UUID userId) {
-    log.info("팔로우 요약 정보 요청 : userId = {}", userId);
     FollowSummaryDto summary = followService.getSummaryFollow(userId);
     return ResponseEntity.ok().body(summary);
   }
@@ -50,9 +48,7 @@ public class FollowController {
     @RequestParam(name = "followingId") UUID userId,
     @ModelAttribute @Valid FollowListCondition conditions
   ){
-    log.info("팔로잉 목록 조회 요청 : userId = {}, conditions = {}", userId, conditions);
     FollowListResponse response = followService.getFollowingList(conditions, userId);
-    log.info("팔로잉 목록 조회 완료 : {}", response);
     return ResponseEntity.ok(response);
   }
 
@@ -61,15 +57,12 @@ public class FollowController {
       @RequestParam(name = "followeeId") UUID userId,
       @ModelAttribute @Valid FollowListCondition conditions
   ){
-    log.info("팔로워 목록 조회 요청 : userId = {}, conditions = {}", userId, conditions);
     FollowListResponse response = followService.getFollowerList(conditions, userId);
-    log.info("팔로워 목록 조회 완료 : {}", response);
     return ResponseEntity.ok(response);
   }
 
   @DeleteMapping("/{followId}")
   public ResponseEntity<Void> deleteFollow(@PathVariable UUID followId) {
-    log.info("팔로우 취소 요청 : followId = {}", followId);
     followService.deleteFollow(followId);
     return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
   }
