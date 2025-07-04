@@ -1,30 +1,14 @@
 package com.example.ootd.domain.feed.repository;
 
 import com.example.ootd.domain.feed.entity.FeedComment;
-import java.time.LocalDateTime;
-import java.util.List;
+import com.example.ootd.domain.feed.repository.custom.CustomFeedCommentRepository;
 import java.util.UUID;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-public interface FeedCommentRepository extends JpaRepository<FeedComment, UUID> {
-
-  @Query("""
-      SELECT fc
-        FROM FeedComment fc
-       WHERE fc.feed.id = :feedId 
-             AND ((fc.createdAt > :cursor)
-                    OR (fc.createdAt = :cursor AND fc.id > :idAfter))
-       ORDER BY fc.createdAt asc, fc.id asc
-      """)
-  List<FeedComment> findByCondition(
-      @Param("feedId") UUID feedId,
-      @Param("cursor") LocalDateTime cursor,
-      @Param("idAfter") UUID idAfter,
-      Pageable pageable
-  );
+public interface FeedCommentRepository extends JpaRepository<FeedComment, UUID>,
+    CustomFeedCommentRepository {
 
   @Query("""
       SELECT count(fc.id)

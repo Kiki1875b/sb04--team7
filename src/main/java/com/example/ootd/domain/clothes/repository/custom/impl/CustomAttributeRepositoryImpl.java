@@ -61,7 +61,7 @@ public class CustomAttributeRepositoryImpl implements CustomAttributeRepository 
   // 속성명, 속성 내용 검색
   private BooleanExpression getWhere(String keywordLike) {
 
-    if (StringUtils.hasText(keywordLike)) {
+    if (!StringUtils.hasText(keywordLike)) {
       return null;
     }
 
@@ -77,7 +77,7 @@ public class CustomAttributeRepositoryImpl implements CustomAttributeRepository 
 
     boolean isDesc = "DESCENDING".equalsIgnoreCase(condition.sortDirection());
 
-    if (!StringUtils.hasText(condition.cursor())) {
+    if (StringUtils.hasText(condition.cursor())) {
       switch (condition.sortBy()) {
         case "name":
           String cursorName = condition.cursor();

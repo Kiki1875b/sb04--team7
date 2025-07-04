@@ -14,7 +14,7 @@ import org.springframework.web.multipart.MultipartFile;
 public interface ClothesService {
 
   // 옷 등록
-  ClothesDto create(ClothesCreateRequest request, MultipartFile image);
+  ClothesDto create(ClothesCreateRequest request, MultipartFile image, UUID userId);
 
   // 옷 수정
   ClothesDto update(ClothesUpdateRequest request, MultipartFile image, UUID clothesId);

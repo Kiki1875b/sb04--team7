@@ -89,7 +89,7 @@ public class CustomFeedRepositoryImpl implements CustomFeedRepository {
 
     boolean isDesc = "DESCENDING".equalsIgnoreCase(condition.sortDirection());
 
-    if (!StringUtils.hasText(condition.cursor())) {
+    if (StringUtils.hasText(condition.cursor())) {
       switch (condition.sortBy()) {
         case "createdAt":
           LocalDateTime cursorCreatedAt = LocalDateTime.parse(condition.cursor());

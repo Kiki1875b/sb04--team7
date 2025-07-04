@@ -74,8 +74,7 @@ public class CustomClothesRepositoryImpl implements CustomClothesRepository {
   // 커서(cursor) 세팅
   private BooleanExpression cursorCondition(String cursor, UUID idAfter) {
 
-    if (StringUtils.hasText(cursor)) {
-
+    if (!StringUtils.hasText(cursor)) {
       return afterCondition(idAfter);
     }
 

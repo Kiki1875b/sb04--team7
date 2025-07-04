@@ -24,6 +24,10 @@ public class ImageServiceImpl implements ImageService {
   @Override
   public Image upload(MultipartFile image) {
 
+    if (image == null) {
+      return null;
+    }
+
     Image saveImage = s3Service.save(image);
     imageRepository.save(saveImage);
 

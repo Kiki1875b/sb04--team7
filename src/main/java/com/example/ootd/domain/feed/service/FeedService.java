@@ -37,7 +37,7 @@ public interface FeedService {
   FeedDto likeFeed(UUID feedId, UUID userId);
 
   // 피드 좋아요 취소
-  FeedDto deleteFeedLike(UUID feedId, UUID userId);
+  void deleteFeedLike(UUID feedId, UUID userId);
 
   /**
    * 피드 댓글

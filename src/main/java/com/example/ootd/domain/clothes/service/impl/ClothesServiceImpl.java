@@ -47,12 +47,12 @@ public class ClothesServiceImpl implements ClothesService {
   private final ClothesMapper clothesMapper;
 
   @Override
-  public ClothesDto create(ClothesCreateRequest request, MultipartFile image) {
+  public ClothesDto create(ClothesCreateRequest request, MultipartFile image, UUID userId) {
 
     log.debug("의상 등록 시작: {}", request);
 
     Image clothesImage = imageService.upload(image);
-    User user = userRepository.findById(request.ownerId())
+    User user = userRepository.findById(userId)
         .orElseThrow(); // TODO: null 처리
 
     // Clothes 등록
@@ -205,7 +205,8 @@ public class ClothesServiceImpl implements ClothesService {
   }
 
   // 삭제 대상 속성 제거, 같은 id의 속성이 이미 존재할 경우
-  private void removeDeletedAttributes(Set<ClothesAttribute> currentAttributes, Set<UUID> incomingIds) {
+  private void removeDeletedAttributes(Set<ClothesAttribute> currentAttributes,
+      Set<UUID> incomingIds) {
     currentAttributes.removeIf(attr -> !incomingIds.contains(attr.getAttribute().getId()));
   }
 

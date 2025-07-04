@@ -35,7 +35,6 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -81,6 +80,8 @@ public class FeedServiceImpl implements FeedService {
       feed.addFeedClothes(feedClothes);
     }
 
+    feedRepository.save(feed);
+
     FeedDto dto = feedMapper.toDto(feed, false);
 
     log.info("피드 등록 완료: {}", dto);
@@ -111,7 +112,6 @@ public class FeedServiceImpl implements FeedService {
 
     List<Feed> feeds = feedRepository.findByCondition(condition);
     Map<UUID, FeedLike> feedLikeMap = getFeedLikeMapByUserId(userId);
-    List<FeedDto> feedDtos = feedMapper.toDto(feeds, feedLikeMap);
 
     boolean hasNext = (feeds.size() > condition.limit());
     String nextCursor = null;
@@ -120,11 +120,13 @@ public class FeedServiceImpl implements FeedService {
 
     // 다음 페이지 있는 경우
     if (hasNext) {
-      feedDtos.remove(feedDtos.size() - 1);   // 다음 페이지 확인용 마지막 요소 삭제
-      FeedDto lastFeed = feedDtos.get(feedDtos.size() - 1);
+      feeds.remove(feeds.size() - 1);   // 다음 페이지 확인용 마지막 요소 삭제
+      Feed lastFeed = feeds.get(feeds.size() - 1);
       nextCursor = getNextCursor(lastFeed, condition.sortBy());
-      nextIdAfter = lastFeed.id();
+      nextIdAfter = lastFeed.getId();
     }
+
+    List<FeedDto> feedDtos = feedMapper.toDto(feeds, feedLikeMap);
 
     PageResponse<FeedDto> response = PageResponse.<FeedDto>builder()
         .data(feedDtos)
@@ -162,6 +164,8 @@ public class FeedServiceImpl implements FeedService {
         .orElseThrow(); // TODO: null 예외처리
 
     FeedLike feedLike = new FeedLike(feed, user);
+    feedLikeRepository.save(feedLike);
+
     feed.increaseLikeCount(); // TODO: 동시성 문제 해결
 
     FeedDto feedDto = feedMapper.toDto(feed, true);
@@ -172,22 +176,18 @@ public class FeedServiceImpl implements FeedService {
   }
 
   @Override
-  public FeedDto deleteFeedLike(UUID feedId, UUID userId) {
+  public void deleteFeedLike(UUID feedId, UUID userId) {
 
     log.debug("피드 좋아요 삭제 시작: feedId={}, userId={}", feedId, userId);
 
     Feed feed = getFeedById(feedId);
-    User user = userRepository.findById(userId)
-        .orElseThrow(); // TODO: null 예외처리
 
     FeedLike feedLike = getFeedLikeByFeedIdAndUserId(feedId, userId);
+    feedLikeRepository.delete(feedLike);
+
     feed.decreaseLikeCount(); // TODO: 동시성 문제 해결
 
-    FeedDto feedDto = feedMapper.toDto(feed, false);
-
-    log.info("피드 좋아요 삭제 완료: {}", feedDto);
-
-    return feedDto;
+    log.info("피드 좋아요 삭제 완료");
   }
 
   @Override
@@ -222,8 +222,7 @@ public class FeedServiceImpl implements FeedService {
 
     log.debug("피드 댓글 목록 조회 시작: {}", condition);
 
-    List<FeedComment> comments = feedCommentRepository.findByCondition(feedId, condition.cursor(),
-        condition.idAfter(), PageRequest.ofSize(condition.limit()));
+    List<FeedComment> comments = feedCommentRepository.findByCondition(condition);
     List<CommentDto> commentDtos = commentMapper.toDto(comments);
 
     boolean hasNext = (comments.size() > condition.limit());
@@ -291,12 +290,12 @@ public class FeedServiceImpl implements FeedService {
   }
 
   // nextCursor 세팅
-  private String getNextCursor(FeedDto feedDto, String sortBy) {
+  private String getNextCursor(Feed feed, String sortBy) {
     switch (sortBy) {
       case "createdAt":
-        return feedDto.createdAt().toString();
+        return feed.getCreatedAt().toString();
       case "likeCount":
-        return String.valueOf(feedDto.likeCount());
+        return String.valueOf(feed.getLikeCount());
       default:
         return null;
     }
