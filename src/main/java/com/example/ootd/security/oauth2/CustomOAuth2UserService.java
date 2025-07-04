@@ -6,6 +6,8 @@ import com.example.ootd.exception.ErrorCode;
 import com.example.ootd.exception.OotdException;
 import com.example.ootd.security.Provider;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -15,6 +17,7 @@ import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
 import org.springframework.security.oauth2.core.user.DefaultOAuth2User;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 @Slf4j
 @Component
@@ -24,6 +27,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
   private final UserRepository userRepository;
 
   @Override
+  @Transactional
   public OAuth2User loadUser(OAuth2UserRequest userRequest) throws OAuth2AuthenticationException {
     OAuth2User oAuth2User = super.loadUser(userRequest);
 
@@ -33,11 +37,11 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
     OAuth2Provider provider = OAuth2Provider.valueOf(registrationId.toUpperCase());
     User user = provider.getOrCreateUser(attributes, userRepository);
 
-    return new DefaultOAuth2User(
-        Collections.singleton(() -> user.getRole().name()),
-        oAuth2User.getAttributes(),
-        "email"
-    );
+    // OAuth2User 의 attributes 는 unmodifiable
+    Map<String, Object> attributesCopy = new HashMap<>(attributes);
+    attributesCopy.put("email", user.getEmail());
+
+    return new CustomOAuth2User(user, attributesCopy);
   }
 
 
@@ -59,13 +63,13 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
     KAKAO{
       @Override
       User getOrCreateUser(Map<String, Object> attributes, UserRepository userRepository){
-        // TODO : 이후 카카오 형식에 맞추어 리팩토링
-        String email = (String) attributes.get("email");
-        String name = (String) attributes.get("name");
-        String providerId = (String) attributes.get("sub");
+
+        String providerId = attributes.get("id").toString();
+        String nickname = (String) ((LinkedHashMap<?, ?>) attributes.get("properties")).get("nickname");
+        String email = nickname + "@kakao.com";
 
         return userRepository.findByEmail(email).orElseGet(() -> {
-          User newUser = new User(name, email, providerId, Provider.GOOGLE);
+          User newUser = new User(nickname, email, providerId, Provider.KAKAO);
           return userRepository.save(newUser);
         });
       }

@@ -8,6 +8,7 @@ import com.example.ootd.security.oauth2.CustomOAuth2UserService;
 import com.example.ootd.security.oauth2.OAuth2LoginSuccessHandler;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -33,6 +34,7 @@ import org.springframework.security.web.util.matcher.OrRequestMatcher;
 import org.springframework.security.web.util.matcher.RequestMatcher;
 import org.springframework.web.servlet.handler.HandlerMappingIntrospector;
 
+@Slf4j
 @Configuration
 @EnableWebSecurity
 @RequiredArgsConstructor
@@ -69,20 +71,24 @@ public class SecurityConfig {
                     "/index.html",
                     "/vite.svg"
                 ).permitAll()
-                .requestMatchers("/oauth2/callback").permitAll()
-                .requestMatchers("/api/auth/me").permitAll()
-                .requestMatchers(HttpMethod.POST, "/api/auth/refresh").permitAll()
-                .requestMatchers(HttpMethod.POST, "/api/auth/reset-password").permitAll()
-                .requestMatchers(HttpMethod.POST, "/api/users").permitAll()
-                .requestMatchers("/test/me").hasRole("USER")
-                .requestMatchers(HttpMethod.POST, "/api/clothes/attribute-defs").hasRole("ADMIN")
-                .requestMatchers(HttpMethod.DELETE, "/api/clothes/attribute-defs/**").hasRole("ADMIN")
-                .requestMatchers(HttpMethod.PATCH, "/api/clothes/attribute-defs/**").hasRole("ADMIN")
-                .anyRequest().authenticated()
+            .requestMatchers("/oauth2/callback").permitAll()
+            .requestMatchers("/api/auth/me").permitAll()
+            .requestMatchers(HttpMethod.POST, "/api/auth/refresh").permitAll()
+            .requestMatchers(HttpMethod.POST, "/api/auth/reset-password").permitAll()
+            .requestMatchers(HttpMethod.POST, "/api/users").permitAll()
+            .requestMatchers("/test/me").hasRole("USER")
+            .requestMatchers(HttpMethod.POST, "/api/clothes/attribute-defs").hasRole("ADMIN")
+            .requestMatchers(HttpMethod.DELETE, "/api/clothes/attribute-defs/**").hasRole("ADMIN")
+            .requestMatchers(HttpMethod.PATCH, "/api/clothes/attribute-defs/**").hasRole("ADMIN")
+            .anyRequest().authenticated()
         )
         .oauth2Login(oauth2 -> oauth2.userInfoEndpoint(userInfo ->
                 userInfo.userService(customOAuth2UserService))
-            .successHandler(oAuth2LoginSuccessHandler))
+            .successHandler(oAuth2LoginSuccessHandler)
+            .failureHandler((request, response, exception) -> {
+              // 1) 로그
+              log.error("OAuth2 로그인 실패 원인:", exception);
+            }))
         .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
         .addFilterAt(customFilter, UsernamePasswordAuthenticationFilter.class);
 
@@ -120,6 +126,6 @@ public class SecurityConfig {
 
     return RoleHierarchyImpl.fromHierarchy(hierarchyString);
   }
-  
+
 
 }

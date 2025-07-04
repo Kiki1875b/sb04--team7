@@ -118,8 +118,10 @@ public class JwtService {
   public void invalidateToken(String token) {
     JwtSession session = jwtSessionRepository.findByRefreshToken(token)
         .orElseThrow(() -> new OotdException(ErrorCode.AUTHENTICATION_FAILED));
+
     BlackList.addToBlacklist(session.getAccessToken(), extractExpiry(session.getAccessToken()));
     BlackList.addToBlacklist(session.getRefreshToken(), extractExpiry(session.getRefreshToken()));
+
     jwtSessionRepository.delete(session);
   }
   // 만료 시간 추출
@@ -133,7 +135,11 @@ public class JwtService {
 
       Date expiration = claims.getExpiration();
       return expiration.toInstant();
-    }catch (Exception e){
+    } catch(ExpiredJwtException e){
+      Date expiration = e.getClaims().getExpiration();
+      return expiration.toInstant();
+    } catch (Exception e){
+      log.warn("[JWT Parse ERROR] : {}" , e.getMessage());
       throw new OotdException(ErrorCode.AUTHENTICATION_FAILED);
     }
   }

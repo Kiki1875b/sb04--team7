@@ -11,10 +11,11 @@ import org.springframework.security.core.userdetails.UserDetails;
 
 
 @RequiredArgsConstructor
-public class CustomUserDetails implements UserDetails {
+public class CustomUserDetails implements UserDetails, PrincipalUser {
 
   private final User user;
 
+  @Override
   public User getUser() {
     return user;
   }
@@ -22,6 +23,11 @@ public class CustomUserDetails implements UserDetails {
   @Override
   public Collection<? extends GrantedAuthority> getAuthorities() {
     return List.of(new SimpleGrantedAuthority(user.getRole().name()));
+  }
+
+  @Override
+  public boolean isOAuthUser() {
+    return false;
   }
 
   @Override

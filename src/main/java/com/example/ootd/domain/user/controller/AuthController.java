@@ -45,7 +45,7 @@ public class AuthController {
   @PostMapping("/auth/sign-out")
   public ResponseEntity<Void> signOut(HttpServletRequest request, HttpServletResponse response){
     authService.signOut(request, response);
-    return ResponseEntity.ok().build();
+    return ResponseEntity.noContent().build();
   }
 
   @GetMapping("/auth/me")
