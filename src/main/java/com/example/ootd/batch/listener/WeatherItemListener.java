@@ -40,11 +40,6 @@ public class WeatherItemListener extends StepListenerSupport<WeatherBatchData, W
 
     failedRegions.computeIfAbsent("process", k -> new ArrayList<>()).add(regionName);
   }
-//
-//  @Override
-//  public void afterWrite(Chunk<? extends Weather> items) {
-//    log.info("Successfully wrote {} weather records", items.size());
-//  }
 
   @Override
   public void onWriteError(Exception exception, Chunk<? extends Weather> items) {

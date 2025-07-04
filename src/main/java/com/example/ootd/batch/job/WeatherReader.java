@@ -65,9 +65,6 @@ public class WeatherReader implements ItemReader<WeatherBatchData> {
 
     for (RegionInfo region : regions) {
       try {
-        log.info("[Partition {}] Fetching weather data for region: {} (nx: {}, ny: {})",
-            partitionId, region.getRegionName(), region.getNx(), region.getNy());
-
         // 1차 API 호출: 현재 예보 데이터
         List<WeatherApiResponse.Item> currentItems = weatherApiClient.getVillageForecast(
             region.getNx(), region.getNy(), numOfRows

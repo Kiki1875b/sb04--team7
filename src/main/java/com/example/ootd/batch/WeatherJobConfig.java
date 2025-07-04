@@ -5,6 +5,7 @@ import com.example.ootd.batch.job.RegionPartitioner;
 import com.example.ootd.batch.job.WeatherProcessor;
 import com.example.ootd.batch.job.WeatherReader;
 import com.example.ootd.batch.job.WeatherWriter;
+import com.example.ootd.batch.listener.WeatherAlertListener;
 import com.example.ootd.batch.listener.WeatherItemListener;
 import com.example.ootd.batch.listener.WeatherJobExecutionListener;
 import com.example.ootd.batch.listener.WeatherStepExecutionListener;
@@ -39,6 +40,7 @@ public class WeatherJobConfig {
   private final WeatherProcessor weatherProcessor;
   private final WeatherWriter weatherWriter;
   private final WeatherItemListener weatherItemListener;
+  private final WeatherAlertListener weatherAlertListener;
   private TaskExecutor weatherBatchTaskExecutor;
 
   @Autowired
@@ -86,6 +88,7 @@ public class WeatherJobConfig {
         .skip(Exception.class)
         .listener(stepExecutionListener())
         .listener((StepExecutionListener) weatherItemListener)
+        .listener((StepExecutionListener) weatherAlertListener)
         .build();
   }
 

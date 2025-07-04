@@ -52,9 +52,9 @@ public class LocationServiceImpl implements LocationService {
               doc.region_3depth_name(),
               doc.region_4depth_name()
           );
-          log.info("Kakao API에서 파싱된 지역명: {}", names);
-          log.info("1단계: '{}', 2단계: '{}', 3단계: '{}', 4단계: '{}'", 
-              doc.region_1depth_name(), doc.region_2depth_name(), 
+          log.debug("Kakao API에서 파싱된 지역명: {}", names);
+          log.debug("1단계: '{}', 2단계: '{}', 3단계: '{}', 4단계: '{}'",
+              doc.region_1depth_name(), doc.region_2depth_name(),
               doc.region_3depth_name(), doc.region_4depth_name());
           return names;
         })
