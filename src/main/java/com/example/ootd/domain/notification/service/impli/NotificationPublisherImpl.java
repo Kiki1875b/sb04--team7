@@ -63,77 +63,71 @@ public class NotificationPublisherImpl implements NotificationPublisherInterface
 
   @Override
   @Async("notificationBulkExecutor")
-  @Retryable(
-      retryFor = Exception.class,          // 일단 모든 예외
-      maxAttempts = 3,                      // 실패시 일단은 두번 추가 시도, 1,2,4초 텀 두고
-      recover = "recoverNotification",
-      backoff = @Backoff(delay = 1_000,
-          multiplier = 2.0,
-          maxDelay = 10_000)
-  )
+//  @Retryable(
+//      retryFor = Exception.class,          // 일단 모든 예외
+//      maxAttempts = 3,                      // 실패시 일단은 두번 추가 시도, 1,2,4초 텀 두고
+//      recover = "recoverNotification",
+//      backoff = @Backoff(delay = 1_000,
+//          multiplier = 2.0,
+//          maxDelay = 10_000)
+//  )
   @Transactional(propagation = NOT_SUPPORTED)//속도를 위해 선언 :: 이미 트랜잭션 있으면 없이 다시 실행
   public void publishToMany(NotificationEvent event, List<UUID> userIdList) {
 
-    List<NotificationDto> batch = new ArrayList<>(BATCH_SIZE);
+    List<NotificationRequest> batch = new ArrayList<>(BATCH_SIZE);
     for (UUID id : userIdList) {
-      NotificationRequest req = new NotificationRequest(
-          id, event.title(),
-          event.content(), event.level());
-
-      NotificationDto dto = notificationService.createNotification(req);
-      batch.add(dto);
-      if (batch.size() == BATCH_SIZE) {//batchSize 차면 이벤트 발행
-        eventPublisher.publishEvent(new NotificationBulk(List.copyOf(batch)));
-        batch = new ArrayList<>(BATCH_SIZE);
+      batch.add(new NotificationRequest(id, event.title(), event.content(), event.level()));
+      if (batch.size() == BATCH_SIZE) {
+        List<NotificationDto> list = notificationService.createAll(batch);//한번에 생성
+        eventPublisher.publishEvent(new NotificationBulk(List.copyOf(list)));
+        batch.clear();
       }
     }
     if (!batch.isEmpty()) {// 안차고 남은거 이벤트 발행
-      eventPublisher.publishEvent(new NotificationBulk(List.copyOf(batch)));
+      List<NotificationDto> list = notificationService.createAll(batch);
+      eventPublisher.publishEvent(new NotificationBulk(List.copyOf(list)));
     }
   }
 
   @Override
   @Async("notificationBulkExecutor")
-  @Retryable(
-      retryFor = Exception.class,          // 일단 모든 예외
-      maxAttempts = 3,                      // 실패시 일단은 두번 추가 시도, 1,2,4초 텀 두고
-      recover = "recoverNotification",
-      backoff = @Backoff(delay = 1_000,
-          multiplier = 2.0,
-          maxDelay = 10_000)
-  )
-  @Transactional(propagation = NOT_SUPPORTED, readOnly = true)
+//  @Retryable(
+//      retryFor = Exception.class,          // 일단 모든 예외
+//      maxAttempts = 3,                      // 실패시 일단은 두번 추가 시도, 1,2,4초 텀 두고
+//      recover = "recoverNotification",
+//      backoff = @Backoff(delay = 1_000,
+//          multiplier = 2.0,
+//          maxDelay = 10_000)
+//  )
+  @Transactional(propagation = NOT_SUPPORTED)
   public void publishToAll(NotificationEvent event) {
 
     UUID cursor = null;
-    boolean hasMore;
-
-    do {
+    boolean hasMore = true;
+    while (hasMore) {
       Pageable pageable = PageRequest.of(0, PAGE_SIZE, Sort.by(Sort.Direction.ASC, "id"));
-      List<UUID> userIds = userRepository.findIdsAfter(cursor, pageable);//db oom해결?
-      List<NotificationDto> dtoList = new ArrayList<>();
+      List<UUID> userIds = userRepository.findIdsAfter(cursor, pageable);   // DB OOM 방지용
+      List<NotificationRequest> batch = new ArrayList<>(BATCH_SIZE);
       for (UUID id : userIds) {
-        NotificationRequest req = new NotificationRequest(id, event.title(), event.content(),
-            event.level());
-        try {
-          NotificationDto dto = notificationService.createNotification(req);
-          dtoList.add(dto);
-        } catch (Exception e) {
-          log.error("알림 모두보내기 실패", id, e);
+        batch.add(new NotificationRequest(id, event.title(), event.content(), event.level()));
+        if (batch.size() == BATCH_SIZE) {
+          List<NotificationDto> list = notificationService.createAll(batch); // bulk 삽입
+          eventPublisher.publishEvent(new NotificationBulk(List.copyOf(list)));
+          batch.clear();
         }
       }
-
-      if (!dtoList.isEmpty()) {
-        eventPublisher.publishEvent(new NotificationBulk(List.copyOf(dtoList)));
+      // 남은 알림 전송
+      if (!batch.isEmpty()) {
+        List<NotificationDto> list = notificationService.createAll(batch);
+        eventPublisher.publishEvent(new NotificationBulk(List.copyOf(list)));
       }
-
       if (userIds.isEmpty()) {
         hasMore = false;
       } else {
         cursor = userIds.get(userIds.size() - 1);
         hasMore = userIds.size() == PAGE_SIZE;
       }
-    } while (hasMore);
+    }
   }
 
   @Recover

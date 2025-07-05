@@ -120,6 +120,13 @@ public class SecurityConfig {
 
     return RoleHierarchyImpl.fromHierarchy(hierarchyString);
   }
-  
+
+  @Bean
+  public WebSecurityCustomizer webSecurityCustomizer() {
+    return (web) -> web.ignoring()
+        .requestMatchers(
+            "/api/notifications"         // 정적 파일
+        );
+  }
 
 }

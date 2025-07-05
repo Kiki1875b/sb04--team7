@@ -3,6 +3,7 @@ package com.example.ootd.domain.notification.service.inter;
 import com.example.ootd.domain.notification.dto.NotificationDto;
 import com.example.ootd.domain.notification.dto.NotificationRequest;
 import com.example.ootd.dto.PageResponse;
+import java.util.List;
 import java.util.UUID;
 
 public interface NotificationServiceInterface {
@@ -17,4 +18,5 @@ public interface NotificationServiceInterface {
 
   void readNotification(UUID NotificationId);//읽고나면 물리적 삭제, 논리적 삭제로 바꾸면 품이 꽤 듬
 
+  List<NotificationDto> createAll(List<NotificationRequest> reqs);
 }

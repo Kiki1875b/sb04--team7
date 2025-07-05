@@ -15,6 +15,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 @Service
@@ -32,6 +33,7 @@ public class SsePushServiceInterfaceImpl implements SsePushServiceInterface {
   private static final long TIMEOUT = Duration.ofMinutes(30).toMillis();
 
   @Override //로그인할때 쓰면 될거같음, 타이밍 맞는지는 합치고 생각
+  @Transactional
   public SseEmitter subscribe(UUID receiverId, UUID lastEventId) {
     try {
       SseEmitter emitter = new SseEmitter(TIMEOUT);
@@ -64,6 +66,7 @@ public class SsePushServiceInterfaceImpl implements SsePushServiceInterface {
 
   @Override
   @Async("ssePushExecutor")
+  @Transactional
   public void push(NotificationDto dto) { //핸들러에서 씀, 구독중인거한테 알림보내기
     try {
       CopyOnWriteArrayList<SseEmitter> list = emitters.get(dto.receiverId());

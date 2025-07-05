@@ -3,6 +3,7 @@ package com.example.ootd.domain.notification.controller;
 import com.example.ootd.domain.notification.dto.NotificationRequest;
 import com.example.ootd.domain.notification.service.inter.NotificationPublisherInterface;
 import com.example.ootd.domain.notification.service.inter.NotificationServiceInterface;
+import com.example.ootd.domain.sse.service.SsePushServiceInterface;
 import com.example.ootd.dto.PageResponse;
 import jakarta.annotation.security.PermitAll;
 import java.util.UUID;
@@ -44,12 +45,14 @@ public class NotificationController {
     return ResponseEntity.noContent().build();
   }
 
-  private final NotificationPublisherInterface notificationPublisherInterface;
-
+//  private final NotificationPublisherInterface notificationPublisherInterface;
+//  private final SsePushServiceInterface ssePushServiceInterface;
+//
 //  @PostMapping//테스트용
 //  @PermitAll
 //  public ResponseEntity<Void> publish(@RequestBody @Validated NotificationRequest req) {
 //
+//    ssePushServiceInterface.subscribe(req.receiverId(), null);
 //    notificationPublisherInterface.publish(req);
 //    return ResponseEntity.accepted().build();
 //  }

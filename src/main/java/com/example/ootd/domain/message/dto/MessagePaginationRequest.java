@@ -5,11 +5,11 @@ import jakarta.validation.constraints.Positive;
 import java.util.UUID;
 import org.springframework.lang.Nullable;
 
-public record MessagePaginationDto(
-    @NotNull UUID sender,
-    @NotNull UUID receiver,
+public record MessagePaginationRequest(
+    @NotNull UUID userId,
     @Nullable UUID cursor,
     boolean isAfter,
-    @Positive int limit) {
+    @Positive int limit
+) {
 
 }

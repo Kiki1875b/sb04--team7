@@ -24,7 +24,7 @@ import org.hibernate.annotations.CreationTimestamp;
 public class Message {
 
   @Id
-  @Column(columnDefinition = "id", nullable = false, updatable = false)
+  @Column(columnDefinition = "uuid", nullable = false, updatable = false)
   private UUID id;
   @ManyToOne(fetch = FetchType.LAZY, optional = false)
   @JoinColumn(name = "sender", nullable = false)
